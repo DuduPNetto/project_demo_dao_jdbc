@@ -32,6 +32,7 @@ public class SellerDaoJDBC implements SellerDao {
 			st = conn.prepareStatement(
 					"INSERT INTO seller (Name, Email, BirthDate, BaseSalary, DepartmentId) " + "VALUES (?, ?, ?, ?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
+
 			st.setString(1, seller.getName());
 			st.setString(2, seller.getEmail());
 			st.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
@@ -59,8 +60,27 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public void update(Seller seller) {
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
 
+		try {
+			st = conn.prepareStatement(
+					"UPDATE seller SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? "
+							+ "WHERE Id = ?",
+					Statement.RETURN_GENERATED_KEYS);
+
+			st.setString(1, seller.getName());
+			st.setString(2, seller.getEmail());
+			st.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
+			st.setDouble(4, seller.getBaseSalary());
+			st.setInt(5, seller.getDepartment().getId());
+			st.setInt(6, seller.getId());
+
+			st.executeUpdate();
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(st);
+		}
 	}
 
 	@Override
@@ -77,6 +97,7 @@ public class SellerDaoJDBC implements SellerDao {
 		try {
 			st = conn.prepareStatement("SELECT seller.*, department.Name as DepName FROM seller INNER JOIN department "
 					+ "ON seller.DepartmentId = department.Id WHERE seller.Id = ?");
+
 			st.setInt(1, id);
 
 			rs = st.executeQuery();
@@ -121,6 +142,7 @@ public class SellerDaoJDBC implements SellerDao {
 		try {
 			st = conn.prepareStatement("SELECT seller.*, department.Name as DepName FROM seller INNER JOIN department "
 					+ "ON seller.DepartmentId = department.Id WHERE DepartmentId = ? ORDER BY NAME");
+
 			st.setInt(1, department.getId());
 
 			rs = st.executeQuery();
